@@ -1,0 +1,21 @@
+# Version control
+.git
+.gitignore
+
+# Environment files & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+id_rsa
+
+# Node/npm/yarn
+node_modules
+npm-debug.log
+yarn-error.log
+.yarn-integrity
+
+# Docker specific
+Dockerfile
+.dockerignore

@@ -17,3 +17,5 @@ package-lock.json
 # Ignorar archivos temporales
 *.tmp
 *.log
+
+.env
