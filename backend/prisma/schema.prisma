@@ -73,6 +73,7 @@ model Order {
 
   items         OrderItem[]
   payment       Payment?
+  invoice       Invoice?
 }
 
 enum OrderStatus {
@@ -116,6 +117,28 @@ model Payment {
   transactionRef     String?       @unique
   processedAt        DateTime?
   createdAt          DateTime      @default(now())
+}
+
+// ─── FACTURAS ─────────────────────────────────────────────────
+model Invoice {
+  id            String        @id @default(uuid())
+  orderId       String        @unique
+  order         Order         @relation(fields: [orderId], references: [id])
+  invoiceNumber String        @unique
+  nit           String?
+  businessName  String
+  subtotal      Decimal       @db.Decimal(10, 2)
+  taxAmount     Decimal       @db.Decimal(10, 2)
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  currency      String        @default("USD")
+  status        InvoiceStatus @default(ISSUED)
+  issuedAt      DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+}
+
+enum InvoiceStatus {
+  ISSUED
+  CANCELLED
 }
 
 enum PaymentMethod {

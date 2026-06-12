@@ -25,7 +25,14 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
-    api.get('/orders/stores').then(data => setStores(data)).catch(console.error);
+    api.get('/orders/stores')
+      .then(data => {
+        setStores(data);
+        if (data.length > 0) {
+          setForm(f => ({ ...f, storeId: String(data[0].id) }));
+        }
+      })
+      .catch((err) => setError(err.message));
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,7 +84,7 @@ export default function CheckoutPage() {
               <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Instrucciones especiales..." />
             </div>
 
-            <button type="submit" className="btn-primary btn-large" disabled={loading}>
+            <button type="submit" className="btn-primary btn-large" disabled={loading || stores.length === 0}>
               {loading ? 'Procesando...' : <><IconCheck /> Confirmar pedido <IconArrowRight /></>}
             </button>
           </form>
