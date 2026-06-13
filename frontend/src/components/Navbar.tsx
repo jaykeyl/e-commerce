@@ -31,6 +31,15 @@ const IconReports = () => (
   </svg>
 );
 
+const IconDashboard = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" rx="2"/>
+    <rect x="14" y="3" width="7" height="7" rx="2"/>
+    <rect x="3" y="14" width="7" height="7" rx="2"/>
+    <path d="M14 14h7v7h-7z"/>
+  </svg>
+);
+
 const IconArchitecture = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="3" width="7" height="7" rx="2"/>
@@ -171,6 +180,12 @@ export default function Navbar() {
           {user && (user.role === 'ADMIN' || user.role === 'STORE_MANAGER') && (
             <>
               <span className="sidebar-nav-label">Admin</span>
+
+              <Link to="/dashboard" className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>
+                <span className="nav-item-icon"><IconDashboard /></span>
+                Dashboard
+              </Link>
+
               <Link to="/reports" className={`nav-item ${isActive('/reports') ? 'active' : ''}`}>
                 <span className="nav-item-icon"><IconReports /></span>
                 Reportes
