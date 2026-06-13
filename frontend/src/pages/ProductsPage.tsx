@@ -11,14 +11,112 @@ interface Product {
   storeId: string;
   tags: string[];
   brand?: string;
+
+  variants?: Record<string, any>[];
+  sizes?: string[];
+  colors?: string[];
+
+  voltage?: string;
+  warrantyMonths?: number;
+  connectivity?: string[];
+  material?: string;
+  dimensions?: Record<string, any>;
+  capacity?: string;
+  dishwasherSafe?: boolean;
+  ovenSafe?: boolean;
+  theme?: string;
+  style?: string;
+
+  [key: string]: any;
 }
 
 const CATEGORIES = ['todas', 'electronica', 'ropa', 'muebles', 'adornos', 'cocina'];
 
 const CATEGORY_LABELS: Record<string, string> = {
-  todas: 'Todas', electronica: 'Electronica', ropa: 'Ropa',
-  muebles: 'Muebles', adornos: 'Adornos', cocina: 'Cocina'
+  todas: 'Todas',
+  electronica: 'Electrónica',
+  ropa: 'Ropa',
+  muebles: 'Muebles',
+  adornos: 'Adornos',
+  cocina: 'Cocina',
 };
+
+const STORE_LABELS: Record<string, string> = {
+  'tech-zone': 'Tech Zone',
+  'moda-urbana': 'Moda Urbana',
+  'casa-bella': 'Casa Bella',
+};
+
+function getDynamicAttributes(product: Product) {
+  const ignored = [
+    '_id',
+    'name',
+    'category',
+    'price',
+    'stock',
+    'storeId',
+    'tags',
+    'brand',
+    'createdAt',
+    'updatedAt',
+  ];
+
+  return Object.entries(product)
+    .filter(([key, value]) => {
+      if (ignored.includes(key)) return false;
+      if (value === null || value === undefined) return false;
+      if (Array.isArray(value) && value.length === 0) return false;
+      if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0) return false;
+      return true;
+    })
+    .slice(0, 4);
+}
+
+function formatDynamicValue(value: any) {
+  if (Array.isArray(value)) {
+    return value
+      .map(item => {
+        if (typeof item === 'object') return Object.values(item).join(' / ');
+        return String(item);
+      })
+      .slice(0, 2)
+      .join(', ');
+  }
+
+  if (typeof value === 'boolean') {
+    return value ? 'Sí' : 'No';
+  }
+
+  if (typeof value === 'object') {
+    return Object.entries(value)
+      .map(([k, v]) => `${k}: ${v}`)
+      .slice(0, 2)
+      .join(', ');
+  }
+
+  return String(value);
+}
+
+function formatAttributeName(key: string) {
+  const labels: Record<string, string> = {
+    variants: 'Variantes',
+    sizes: 'Tallas',
+    colors: 'Colores',
+    voltage: 'Voltaje',
+    warrantyMonths: 'Garantía',
+    connectivity: 'Conectividad',
+    material: 'Material',
+    dimensions: 'Dimensiones',
+    capacity: 'Capacidad',
+    dishwasherSafe: 'Lavavajillas',
+    ovenSafe: 'Horno',
+    theme: 'Tema',
+    style: 'Estilo',
+  };
+
+  return labels[key] || key;
+}
+
 
 // ── SVG Icons ──────────────────────────────────────────────────
 const IconSearch = () => (
@@ -41,7 +139,7 @@ const IconCart = () => (
 );
 
 const IconHeart = ({ filled }: { filled?: boolean }) => (
-  <svg viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+  <svg viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
   </svg>
 );
@@ -81,6 +179,14 @@ const IconEmpty = () => (
 const IconSparkle = () => (
   <svg viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+  </svg>
+);
+
+const IconInfo = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="16" x2="12" y2="12"/>
+    <line x1="12" y1="8" x2="12.01" y2="8"/>
   </svg>
 );
 
@@ -125,20 +231,30 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filters, setFilters] = useState({ category: 'todas', minPrice: '', maxPrice: '', search: '', inStock: false });
+  const [filters, setFilters] = useState({
+    category: 'todas',
+    minPrice: '',
+    maxPrice: '',
+    search: '',
+    inStock: false,
+  });
   const [cartMsg, setCartMsg] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [liked, setLiked] = useState<Set<string>>(new Set());
 
-  const fetchProducts = async () => {
-    setLoading(true); setError('');
+  const fetchProductsWithFilters = async (nextFilters = filters) => {
+    setLoading(true);
+    setError('');
+
     try {
       const params = new URLSearchParams();
-      if (filters.category !== 'todas') params.set('category', filters.category);
-      if (filters.minPrice) params.set('minPrice', filters.minPrice);
-      if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
-      if (filters.search) params.set('search', filters.search);
-      if (filters.inStock) params.set('inStock', 'true');
+
+      if (nextFilters.category !== 'todas') params.set('category', nextFilters.category);
+      if (nextFilters.minPrice) params.set('minPrice', nextFilters.minPrice);
+      if (nextFilters.maxPrice) params.set('maxPrice', nextFilters.maxPrice);
+      if (nextFilters.search) params.set('search', nextFilters.search);
+      if (nextFilters.inStock) params.set('inStock', 'true');
+
       const data = await api.get(`/products?${params}`);
       setProducts(data.products);
     } catch (err: any) {
@@ -148,10 +264,17 @@ export default function ProductsPage() {
     }
   };
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => {
+    fetchProductsWithFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const addToCart = async (productId: string) => {
-    if (!user) { setCartMsg('Debes iniciar sesión para agregar al carrito'); return; }
+    if (!user) {
+      setCartMsg('Debes iniciar sesión para agregar al carrito');
+      return;
+    }
+
     try {
       await api.post('/cart/add', { productId, quantity: 1 });
       setCartMsg('Agregado al carrito');
@@ -171,19 +294,59 @@ export default function ProductsPage() {
 
   const getBtnClass = (cat: string) => {
     const map: Record<string, string> = {
-      ropa: 'ropa-cat', muebles: 'muebles-cat', adornos: 'adornos-cat', cocina: 'cocina-cat'
+      ropa: 'ropa-cat',
+      muebles: 'muebles-cat',
+      adornos: 'adornos-cat',
+      cocina: 'cocina-cat',
     };
+
     return `btn-cart ${map[cat] || 'primary-cat'}`;
   };
 
+  const clearFilters = () => {
+    const cleanFilters = {
+      category: 'todas',
+      minPrice: '',
+      maxPrice: '',
+      search: '',
+      inStock: false,
+    };
+
+    setFilters(cleanFilters);
+    fetchProductsWithFilters(cleanFilters);
+  };
+
+  const totalProducts = products.length;
+  const lowStockCount = products.filter(p => p.stock > 0 && p.stock <= 5).length;
+  const categoriesCount = new Set(products.map(p => p.category)).size;
+
   return (
     <div className="page">
-      <div className="page-header">
-        <h1 className="page-title">
-          Encuentra lo que <span>necesitas hoy</span>{' '}
-          <span className="sparkle"><IconSparkle /></span>
-        </h1>
-        <p className="page-subtitle">Explora miles de productos increíbles</p>
+      <div className="page-header products-page-header">
+        <div>
+          <h1 className="page-title">
+            Encuentra lo que <span>necesitas hoy</span>{' '}
+            <span className="sparkle"><IconSparkle /></span>
+          </h1>
+          <p className="page-subtitle">
+            Catálogo flexible en MongoDB con atributos dinámicos por categoría.
+          </p>
+        </div>
+
+        <div className="products-kpis">
+          <div>
+            <strong>{totalProducts}</strong>
+            <span>Productos</span>
+          </div>
+          <div>
+            <strong>{categoriesCount}</strong>
+            <span>Categorías</span>
+          </div>
+          <div>
+            <strong>{lowStockCount}</strong>
+            <span>Stock bajo</span>
+          </div>
+        </div>
       </div>
 
       <div className="filters-section">
@@ -195,9 +358,10 @@ export default function ProductsPage() {
               placeholder="Buscar productos, marcas, tags..."
               value={filters.search}
               onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
-              onKeyDown={e => e.key === 'Enter' && fetchProducts()}
+              onKeyDown={e => e.key === 'Enter' && fetchProductsWithFilters()}
             />
           </div>
+
           <button className="filter-settings-btn" title="Filtros avanzados" onClick={() => setShowFilters(s => !s)}>
             <IconFilter />
           </button>
@@ -208,7 +372,11 @@ export default function ProductsPage() {
             <button
               key={cat}
               className={`cat-btn ${filters.category === cat ? 'active' : ''}`}
-              onClick={() => setFilters(f => ({ ...f, category: cat }))}
+              onClick={() => {
+                const nextFilters = { ...filters, category: cat };
+                setFilters(nextFilters);
+                fetchProductsWithFilters(nextFilters);
+              }}
             >
               {CATEGORY_LABELS[cat]}
             </button>
@@ -230,7 +398,9 @@ export default function ProductsPage() {
                 />
               </div>
             </div>
+
             <span className="price-divider">—</span>
+
             <div className="price-filter-group">
               <label>Precio máximo</label>
               <div className="price-symbol">
@@ -244,12 +414,22 @@ export default function ProductsPage() {
                 />
               </div>
             </div>
+
             <label className="checkbox-label">
-              <input type="checkbox" checked={filters.inStock} onChange={e => setFilters(f => ({ ...f, inStock: e.target.checked }))} />
+              <input
+                type="checkbox"
+                checked={filters.inStock}
+                onChange={e => setFilters(f => ({ ...f, inStock: e.target.checked }))}
+              />
               Solo en stock
             </label>
-            <button className="btn-primary" onClick={fetchProducts}>
+
+            <button className="btn-primary" onClick={() => fetchProductsWithFilters()}>
               <IconSearch /> Buscar
+            </button>
+
+            <button className="btn-secondary" onClick={clearFilters}>
+              Limpiar
             </button>
           </div>
         )}
@@ -261,61 +441,113 @@ export default function ProductsPage() {
           {cartMsg}
         </div>
       )}
+
       {error && <div className="error-msg">{error}</div>}
 
       {loading ? (
         <div className="loading">Cargando productos...</div>
       ) : (
         <div className="products-grid">
-          {products.map(p => (
-            <div key={p._id} className="product-card">
-              <div className="product-card-img">
-                <div className="product-img-placeholder">
-                  {CatIcons[p.category] || CatIcons.default}
+          {products.map(p => {
+            const dynamicAttributes = getDynamicAttributes(p);
+            const isLowStock = p.stock > 0 && p.stock <= 5;
+            const isOutStock = p.stock === 0;
+
+            return (
+              <div key={p._id} className={`product-card product-card-premium ${isLowStock ? 'low-stock-card' : ''}`}>
+                <div className="product-card-img product-card-img-premium">
+                  <div className="product-img-placeholder">
+                    {CatIcons[p.category] || CatIcons.default}
+                  </div>
+
+                  <div className="product-floating-badges">
+                    <span className="mongo-badge">BSON</span>
+                    {isLowStock && <span className="stock-alert-badge">Stock bajo</span>}
+                    {isOutStock && <span className="stock-alert-badge danger">Sin stock</span>}
+                  </div>
+
+                  {dynamicAttributes.length > 0 && (
+                    <div className="product-info-mini">
+                      <button
+                        className="product-info-mini-btn"
+                        type="button"
+                        aria-label="Ver atributos dinámicos"
+                      >
+                        <IconInfo />
+                      </button>
+
+                      <div className="product-info-mini-panel">
+                        <div className="product-info-mini-title">Atributos BSON</div>
+
+                        {dynamicAttributes.slice(0, 4).map(([key, value]) => (
+                          <div key={key} className="product-info-mini-row">
+                            <small>{formatAttributeName(key)}</small>
+                            <span>{formatDynamicValue(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="product-card-body">
-                <div className="product-card-top">
-                  <span className={`product-category-badge ${p.category}`}>
-                    {CATEGORY_LABELS[p.category] || p.category}
-                  </span>
+
+                <div className="product-card-body">
+                  <div className="product-card-top">
+                    <span className={`product-category-badge ${p.category}`}>
+                      {CATEGORY_LABELS[p.category] || p.category}
+                    </span>
+
+                    <button
+                      className={`product-heart ${liked.has(p._id) ? 'liked' : ''}`}
+                      onClick={() => toggleLike(p._id)}
+                      title="Favorito"
+                    >
+                      <IconHeart filled={liked.has(p._id)} />
+                    </button>
+                  </div>
+
+                  <div className="product-name">{p.name}</div>
+
+                  <div className="product-meta-row">
+                    {p.brand && <span>{p.brand}</span>}
+                    <span>{STORE_LABELS[p.storeId] || p.storeId}</span>
+                  </div>
+
+                  <div className="product-price-row">
+                    <div className="product-price">${p.price.toFixed(2)}</div>
+
+                    <div className={`product-stock ${isOutStock ? 'out' : isLowStock ? 'low' : 'ok'}`}>
+                      {isOutStock
+                        ? <><IconX /> Sin stock</>
+                        : isLowStock
+                          ? <><IconWarning /> Solo {p.stock}</>
+                          : <><IconCheck /> {p.stock} unidades</>
+                      }
+                    </div>
+                  </div>
+
+                  {p.tags?.length > 0 && (
+                    <div className="product-tags product-tags-premium">
+                      {p.tags.slice(0, 4).map(tag => (
+                        <span key={tag} className="tag">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="product-store product-store-premium">
+                    <IconStore /> Catálogo documental · {STORE_LABELS[p.storeId] || p.storeId}
+                  </div>
+
                   <button
-                    className={`product-heart ${liked.has(p._id) ? 'liked' : ''}`}
-                    onClick={() => toggleLike(p._id)}
-                    title="Favorito"
+                    className={getBtnClass(p.category)}
+                    disabled={isOutStock}
+                    onClick={() => addToCart(p._id)}
                   >
-                    <IconHeart filled={liked.has(p._id)} />
+                    <IconCart /> {isOutStock ? 'Sin stock' : 'Agregar al carrito'}
                   </button>
                 </div>
-                <div className="product-name">{p.name}</div>
-                {p.brand && <div className="product-brand">{p.brand}</div>}
-                <div className="product-price">${p.price.toFixed(2)}</div>
-                <div className={`product-stock ${p.stock === 0 ? 'out' : p.stock < 5 ? 'low' : 'ok'}`}>
-                  {p.stock === 0
-                    ? <><IconX /> Sin stock</>
-                    : p.stock < 5
-                    ? <><IconWarning /> Solo {p.stock} disponibles</>
-                    : <><IconCheck /> Stock: {p.stock}</>
-                  }
-                </div>
-                {p.tags.length > 0 && (
-                  <div className="product-tags">
-                    {p.tags.slice(0, 3).map(tag => <span key={tag} className="tag">#{tag}</span>)}
-                  </div>
-                )}
-                <div className="product-store">
-                  <IconStore /> {p.storeId}
-                </div>
-                <button
-                  className={getBtnClass(p.category)}
-                  disabled={p.stock === 0}
-                  onClick={() => addToCart(p._id)}
-                >
-                  <IconCart /> {p.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -323,14 +555,12 @@ export default function ProductsPage() {
         <div className="empty">
           <div className="empty-icon"><IconEmpty /></div>
           <p>No se encontraron productos con esos filtros.</p>
-          <button className="btn-primary" onClick={() => {
-            setFilters({ category: 'todas', minPrice: '', maxPrice: '', search: '', inStock: false });
-            fetchProducts();
-          }}>
+          <button className="btn-primary" onClick={clearFilters}>
             Limpiar filtros
           </button>
         </div>
       )}
+
     </div>
   );
 }

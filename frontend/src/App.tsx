@@ -10,6 +10,7 @@ import OrdersPage from './pages/OrdersPage';
 import ReportsPage from './pages/ReportsPage';
 import './App.css';
 import { useEffect } from 'react';
+import ArchitecturePage from './pages/ArchitecturePage';
 
 function AppShell() {
   const location = useLocation();
@@ -43,6 +44,7 @@ function AppShell() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/architecture" element={<ArchitecturePage />} />
         </Routes>
       </main>
     </div>
