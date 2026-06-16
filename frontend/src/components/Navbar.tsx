@@ -115,6 +115,12 @@ const IconBrandM = () => (
   </svg>
 );
 
+const IconHeartNav = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+  </svg>
+);
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -154,10 +160,17 @@ export default function Navbar() {
           </Link>
 
           {user && (
-            <Link to="/cart" className={`nav-item ${isActive('/cart') ? 'active' : ''}`}>
-              <span className="nav-item-icon"><IconCart /></span>
-              Carrito
-            </Link>
+            <>
+              <Link to="/cart" className={`nav-item ${isActive('/cart') ? 'active' : ''}`}>
+                <span className="nav-item-icon"><IconCart /></span>
+                Carrito
+              </Link>
+
+              <Link to="/favorites" className={`nav-item ${isActive('/favorites') ? 'active' : ''}`}>
+                <span className="nav-item-icon"><IconHeartNav /></span>
+                Favoritos
+              </Link>
+            </>
           )}
 
           {user && (
@@ -200,7 +213,7 @@ export default function Navbar() {
           </div>
           <div className="sidebar-promo-title">Ofertas exclusivas</div>
           <div className="sidebar-promo-desc">Descubre productos con descuentos únicos por tiempo limitado.</div>
-          <button className="sidebar-promo-btn">Ver ofertas →</button>
+          <Link to="/?search=oferta" className="sidebar-promo-btn">Ver ofertas →</Link>
         </div>
 
         <div className="sidebar-footer">

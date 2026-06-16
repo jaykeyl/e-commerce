@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,6 +8,8 @@ interface Product {
   name: string;
   category: string;
   price: number;
+  originalPrice?: number;
+  discountPercent?: number;
   stock: number;
   storeId: string;
   tags: string[];
@@ -59,6 +62,8 @@ function getDynamicAttributes(product: Product) {
     'tags',
     'brand',
     'imageUrl',
+    'originalPrice',
+    'discountPercent',
     'createdAt',
     'updatedAt',
   ];
@@ -204,7 +209,7 @@ const IconInfo = () => (
 );
 
 // Category placeholder icons
-const CatIcons: Record<string, JSX.Element> = {
+const CatIcons: Record<string, any> = {
   electronica: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
@@ -241,15 +246,17 @@ const CatIcons: Record<string, JSX.Element> = {
 
 export default function ProductsPage() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryString = searchParams.toString();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({
-    category: 'todas',
-    minPrice: '',
-    maxPrice: '',
-    search: '',
-    inStock: false,
+    category: searchParams.get('category') || 'todas',
+    minPrice: searchParams.get('minPrice') || '',
+    maxPrice: searchParams.get('maxPrice') || '',
+    search: searchParams.get('search') || '',
+    inStock: searchParams.get('inStock') === 'true',
   });
   const [cartMsg, setCartMsg] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -286,9 +293,20 @@ export default function ProductsPage() {
   };
 
   useEffect(() => {
-    fetchProductsWithFilters();
+    const params = new URLSearchParams(queryString);
+
+    const queryFilters = {
+      category: params.get('category') || 'todas',
+      minPrice: params.get('minPrice') || '',
+      maxPrice: params.get('maxPrice') || '',
+      search: params.get('search') || '',
+      inStock: params.get('inStock') === 'true',
+    };
+
+    setFilters(queryFilters);
+    fetchProductsWithFilters(queryFilters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [queryString]);
 
   const addToCart = async (productId: string) => {
     if (!user) {
@@ -341,6 +359,7 @@ export default function ProductsPage() {
     };
 
     setFilters(cleanFilters);
+    setSearchParams({});
     fetchProductsWithFilters(cleanFilters);
   };
 
@@ -480,6 +499,9 @@ export default function ProductsPage() {
             const dynamicAttributes = getDynamicAttributes(p);
             const isLowStock = p.stock > 0 && p.stock <= 5;
             const isOutStock = p.stock === 0;
+            const isOffer = p.tags?.includes('oferta') || Boolean(p.discountPercent);
+            const discountPercent = p.discountPercent || 50;
+            const originalPrice = p.originalPrice || (isOffer ? p.price * 2 : undefined);
 
             return (
               <div key={p._id} className={`product-card product-card-premium ${isLowStock ? 'low-stock-card' : ''}`}>
@@ -502,6 +524,7 @@ export default function ProductsPage() {
 
                   <div className="product-floating-badges">
                     <span className="mongo-badge">BSON</span>
+                    {isOffer && <span className="offer-badge-card">{discountPercent}% OFF</span>}
                     {isLowStock && <span className="stock-alert-badge">Stock bajo</span>}
                     {isOutStock && <span className="stock-alert-badge danger">Sin stock</span>}
                   </div>
@@ -542,7 +565,12 @@ export default function ProductsPage() {
                   </div>
 
                   <div className="product-price-row">
-                    <div className="product-price">${p.price.toFixed(2)}</div>
+                    <div className="product-price-stack">
+                      {isOffer && originalPrice && (
+                        <span className="product-old-price">${originalPrice.toFixed(2)}</span>
+                      )}
+                      <div className="product-price">${p.price.toFixed(2)}</div>
+                    </div>
 
                     <div className={`product-stock ${isOutStock ? 'out' : isLowStock ? 'low' : 'ok'}`}>
                       {isOutStock

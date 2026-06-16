@@ -78,7 +78,7 @@ const IconWarning = () => (
   </svg>
 );
 
-const CAT_ICONS: Record<string, JSX.Element> = {
+const CAT_ICONS: Record<string, any> = {
   electronica: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>,
   ropa: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>,
   muebles: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/></svg>,
@@ -93,6 +93,7 @@ export default function CartPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
+  const [updatingQty, setUpdatingQty] = useState<string | null>(null);
 
   const fetchCart = async () => {
     setLoading(true);
@@ -124,6 +125,18 @@ export default function CartPage() {
       fetchCart();
     } catch (err: any) {
       setMsg(err.message);
+    }
+  };
+
+  const updateQuantity = async (productId: string, nextQuantity: number) => {
+    try {
+      setUpdatingQty(productId);
+      await api.patch(`/cart/item/${productId}`, { quantity: nextQuantity });
+      fetchCart();
+    } catch (err: any) {
+      setMsg(err.message);
+    } finally {
+      setUpdatingQty(null);
     }
   };
 
@@ -227,7 +240,25 @@ export default function CartPage() {
                     <div className="cart-item-name">{product?.name || item.productId}</div>
 
                     <div className="cart-item-details">
-                      <span>Cantidad: <strong>{item.quantity}</strong></span>
+                      <div className="cart-qty-control">
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                          disabled={updatingQty === item.productId}
+                          title="Disminuir cantidad"
+                        >
+                          −
+                        </button>
+                        <strong>{item.quantity}</strong>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                          disabled={updatingQty === item.productId || item.quantity >= stock}
+                          title="Aumentar cantidad"
+                        >
+                          +
+                        </button>
+                      </div>
                       <span>Precio unitario: <strong>${(product?.price || 0).toFixed(2)}</strong></span>
                       <span>Stock actual: <strong>{stock}</strong></span>
                     </div>

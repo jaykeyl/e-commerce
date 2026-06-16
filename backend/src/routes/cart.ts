@@ -69,6 +69,53 @@ router.post('/add', authenticate, async (req: AuthRequest, res: Response) => {
   }
 });
 
+
+// PATCH /api/cart/item/:productId — actualizar cantidad exacta
+router.patch('/item/:productId', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const db = getMongo();
+    const userId = req.user!.userId;
+    const productId = String(req.params.productId);
+    const quantity = Number(req.body.quantity);
+
+    if (!Number.isFinite(quantity)) {
+      return res.status(400).json({ error: 'Cantidad inválida' });
+    }
+
+    if (quantity <= 0) {
+      await db.collection('carts').updateOne(
+        { userId },
+        { $pull: { items: { productId } } as any, $set: { updatedAt: new Date() } }
+      );
+      return res.json({ message: 'Item eliminado del carrito' });
+    }
+
+    const product = await db.collection('products').findOne({ _id: new ObjectId(productId) });
+    if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
+    if (product.stock < quantity) return res.status(400).json({ error: 'Stock insuficiente' });
+
+    const cart = await db.collection('carts').findOne({ userId });
+    if (!cart) return res.status(404).json({ error: 'Carrito no encontrado' });
+
+    const exists = cart.items.some((i: any) => i.productId === productId);
+    if (!exists) return res.status(404).json({ error: 'Item no encontrado en el carrito' });
+
+    await db.collection('carts').updateOne(
+      { userId, 'items.productId': productId },
+      {
+        $set: {
+          'items.$.quantity': quantity,
+          updatedAt: new Date()
+        }
+      }
+    );
+
+    return res.json({ message: 'Cantidad actualizada' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // DELETE /api/cart/item/:productId
 router.delete('/item/:productId', authenticate, async (req: AuthRequest, res: Response) => {
   try {

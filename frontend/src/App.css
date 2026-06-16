@@ -4730,3 +4730,511 @@ body.dark .invoice-modal .invoice-totals .grand-total strong {
   background: rgba(255, 92, 122, 0.12) !important;
   border-color: rgba(255, 92, 122, 0.22) !important;
 }
+
+
+/* =========================
+   Offers, favorites and cart quantity polish
+========================= */
+
+.offer-badge-card {
+  background: linear-gradient(135deg, #ff5c7a, #ff9f43);
+  color: white;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 28px rgba(255, 92, 122, 0.28);
+  pointer-events: none;
+}
+
+.product-price-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.product-old-price {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.cart-qty-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem;
+  border-radius: 999px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+}
+
+.cart-qty-control button {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--primary);
+  font-size: 1.05rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.cart-qty-control button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(92, 90, 246, 0.15);
+}
+
+.cart-qty-control button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cart-qty-control strong {
+  min-width: 26px;
+  text-align: center;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.favorites-header {
+  align-items: center;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.favorite-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.favorite-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 26px 60px rgba(15, 23, 42, 0.14);
+}
+
+.favorite-img {
+  position: relative;
+  height: 210px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(92, 90, 246, 0.08), rgba(0, 212, 168, 0.06));
+}
+
+.favorite-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.favorite-img .mongo-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+}
+
+.favorite-img .offer-badge-card {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+.favorite-img-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+}
+
+.favorite-img-fallback svg {
+  width: 58px;
+  height: 58px;
+  opacity: 0.45;
+}
+
+.favorite-body {
+  padding: 1.25rem;
+}
+
+.favorite-body h3 {
+  margin: 0.8rem 0 0.7rem;
+  font-size: 1.04rem;
+  color: var(--text);
+}
+
+.favorite-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.favorite-price-row strong {
+  color: var(--primary);
+  font-size: 1.35rem;
+}
+
+.favorite-price-row > span {
+  color: var(--success);
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+
+.favorite-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.favorite-actions .btn-primary {
+  min-height: 42px;
+}
+
+.favorite-remove {
+  border: 1px solid rgba(255, 92, 122, 0.22);
+  color: #ff5c7a;
+  background: rgba(255, 92, 122, 0.09);
+  border-radius: 14px;
+  padding: 0.75rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.favorite-remove svg {
+  width: 16px;
+  height: 16px;
+}
+
+.favorites-empty {
+  min-height: 420px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.favorites-empty-icon {
+  width: 84px;
+  height: 84px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 92, 122, 0.1);
+  color: #ff5c7a;
+  margin-bottom: 1rem;
+}
+
+.favorites-empty-icon svg {
+  width: 42px;
+  height: 42px;
+}
+
+@media (max-width: 768px) {
+  .favorite-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fix icono Favoritos en sidebar */
+.sidebar-nav-item svg {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  flex-shrink: 0 !important;
+}
+
+.sidebar-nav-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+/* =========================
+   Favorites page final polish
+========================= */
+
+.favorites-page {
+  padding-top: 2rem;
+}
+
+.favorites-grid {
+  align-items: stretch;
+}
+
+.favorite-card {
+  max-width: 330px;
+  width: 100%;
+}
+
+.favorite-img {
+  height: 210px !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.favorite-img img {
+  object-fit: contain !important;
+  object-position: center !important;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, rgba(92, 90, 246, 0.05), rgba(0, 212, 168, 0.04));
+}
+
+.favorite-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 270px;
+}
+
+.favorite-body h3 {
+  line-height: 1.35;
+  min-height: 46px;
+}
+
+.favorite-price-row {
+  margin-top: auto;
+  align-items: center !important;
+}
+
+.favorite-price-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.favorite-price-row .product-old-price {
+  font-size: 0.82rem;
+}
+
+.favorite-actions {
+  grid-template-columns: 1fr auto !important;
+  gap: 0.6rem !important;
+  margin-top: 1rem;
+}
+
+.favorite-actions .btn-primary {
+  height: 46px;
+  padding: 0 1rem;
+  font-size: 0.88rem;
+  border-radius: 15px;
+  white-space: nowrap;
+}
+
+.favorite-remove {
+  height: 46px;
+  min-width: 92px;
+  justify-content: center;
+  padding: 0 0.85rem !important;
+  border-radius: 15px !important;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.favorite-remove svg,
+.favorite-actions .btn-primary svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 900px) {
+  .favorites-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  .favorite-card {
+    max-width: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .favorite-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .favorite-remove {
+    width: 100%;
+  }
+}
+
+/* =========================
+   Sidebar final alignment fix
+========================= */
+
+.sidebar {
+  width: 240px !important;
+  min-width: 240px !important;
+  height: 100vh !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.main-content {
+  margin-left: 240px !important;
+  width: calc(100% - 240px) !important;
+}
+
+.sidebar-header {
+  height: 96px !important;
+  min-height: 96px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 1.25rem !important;
+}
+
+.sidebar-nav {
+  flex: 1 !important;
+  padding: 1.25rem 0.75rem 0 !important;
+  overflow: hidden !important;
+}
+
+.sidebar-nav-item {
+  width: 100% !important;
+  min-height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.7rem 0.85rem !important;
+  border-radius: 14px !important;
+  box-sizing: border-box !important;
+}
+
+.sidebar-nav-item svg {
+  width: 19px !important;
+  height: 19px !important;
+  min-width: 19px !important;
+  max-width: 19px !important;
+  flex-shrink: 0 !important;
+}
+
+.sidebar-nav-label {
+  display: block !important;
+  margin: 1.25rem 0 0.55rem 0.85rem !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.14em !important;
+}
+
+.sidebar-promo {
+  margin: 0.75rem 0.75rem 0.7rem !important;
+  padding: 1.1rem !important;
+  border-radius: 18px !important;
+  flex-shrink: 0 !important;
+}
+
+.sidebar-footer {
+  flex-shrink: 0 !important;
+  padding: 0.75rem !important;
+}
+
+.sidebar-socials {
+  display: flex !important;
+  gap: 0.55rem !important;
+  justify-content: flex-start !important;
+}
+
+.social-icon {
+  width: 30px !important;
+  height: 30px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.social-icon svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+@media (max-height: 760px) {
+  .sidebar-promo {
+    display: none !important;
+  }
+}
+
+/* =========================
+   Sidebar favorites active icon fix
+========================= */
+
+.sidebar-nav-item {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.75rem !important;
+  text-align: left !important;
+}
+
+.sidebar-nav-item svg {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 19px !important;
+  height: 19px !important;
+  min-width: 19px !important;
+  max-width: 19px !important;
+  flex: 0 0 19px !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
+}
+
+.sidebar-nav-item span {
+  display: inline-flex !important;
+  align-items: center !important;
+  text-align: left !important;
+}
+
+.sidebar-nav-item.active {
+  justify-content: flex-start !important;
+  color: var(--primary) !important;
+  background: rgba(92, 90, 246, 0.14) !important;
+  border: 1px solid rgba(92, 90, 246, 0.18) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.sidebar-nav-item.active svg {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: var(--primary) !important;
+  stroke: var(--primary) !important;
+  fill: none !important;
+}
+
+/* Fix final Favoritos usando el mismo estilo del menú */
+.nav-item .nav-item-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  max-width: 18px !important;
+  display: block !important;
+  color: currentColor !important;
+  stroke: currentColor !important;
+  fill: none !important;
+}
