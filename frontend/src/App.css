@@ -5238,3 +5238,132 @@ body.dark .invoice-modal .invoice-totals .grand-total strong {
   stroke: currentColor !important;
   fill: none !important;
 }
+
+/* =========================
+   FIX FINAL REAL - Info BSON sin tapar favoritos
+========================= */
+
+/* La card puede dejar salir el popup, pero la imagen se queda recortada */
+.product-card,
+.product-card-premium {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.products-grid {
+  overflow: visible !important;
+}
+
+.product-card:hover,
+.product-card-premium:hover {
+  z-index: 9999 !important;
+}
+
+/* La imagen NO se sale */
+.product-card-img,
+.product-card-img-premium {
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.product-card-img img,
+.product-card-img-premium img,
+.product-real-img {
+  transform: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 210px !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+/* Botón info sobre la esquina inferior de la imagen */
+.product-info-mini {
+  position: absolute !important;
+  top: 172px !important;
+  right: 18px !important;
+  z-index: 30 !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+/* Botón redondito */
+.product-info-mini-btn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(92, 90, 246, 0.25) !important;
+  background: var(--accent) !important;
+  color: white !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 10px 24px rgba(92, 90, 246, 0.28) !important;
+  position: relative !important;
+  z-index: 35 !important;
+}
+
+/* Popup: sale hacia ARRIBA, no hacia abajo */
+.product-info-mini-panel {
+  position: absolute !important;
+  right: -6px !important;
+  top: auto !important;
+  bottom: 44px !important;
+
+  width: 260px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 12px !important;
+  border-radius: 18px !important;
+
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(92, 90, 246, 0.18) !important;
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.22) !important;
+  backdrop-filter: blur(12px) !important;
+
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(8px) scale(0.96) !important;
+  transform-origin: bottom right !important;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease !important;
+
+  pointer-events: none !important;
+  z-index: 34 !important;
+}
+
+/* Solo aparece al pasar por el botón de info */
+.product-info-mini:hover .product-info-mini-panel,
+.product-info-mini:focus-within .product-info-mini-panel {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) scale(1) !important;
+  pointer-events: none !important;
+}
+
+/* La flechita queda abajo del popup */
+.product-info-mini-panel::after {
+  content: '' !important;
+  position: absolute !important;
+  right: 16px !important;
+  bottom: -7px !important;
+  width: 14px !important;
+  height: 14px !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-right: 1px solid rgba(92, 90, 246, 0.18) !important;
+  border-bottom: 1px solid rgba(92, 90, 246, 0.18) !important;
+  transform: rotate(45deg) !important;
+}
+
+/* El corazón siempre queda clickeable */
+.product-heart {
+  position: relative !important;
+  z-index: 80 !important;
+  pointer-events: auto !important;
+}
+
+/* Para que el popup no tape visualmente el contenido de abajo */
+.product-card-body {
+  position: relative !important;
+  z-index: 10 !important;
+}

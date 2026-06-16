@@ -528,19 +528,30 @@ export default function ProductsPage() {
                     {isLowStock && <span className="stock-alert-badge">Stock bajo</span>}
                     {isOutStock && <span className="stock-alert-badge danger">Sin stock</span>}
                   </div>
+                </div>
 
-                  {dynamicAttributes.length > 0 && (
+                {dynamicAttributes.length > 0 && (
+                  <div className="product-info-mini">
                     <button
-                      className="product-info-btn product-info-tooltip-btn"
+                      className="product-info-mini-btn"
                       type="button"
                       aria-label="Ver atributos dinámicos"
-                      data-tooltip={getDynamicSummary(p)}
-                      title={getDynamicSummary(p)}
                     >
                       <IconInfo />
                     </button>
-                  )}
-                </div>
+
+                    <div className="product-info-mini-panel">
+                      <div className="product-info-mini-title">Atributos BSON</div>
+
+                      {dynamicAttributes.slice(0, 4).map(([key, value]) => (
+                        <div key={key} className="product-info-mini-row">
+                          <small>{formatAttributeName(key)}</small>
+                          <span>{formatDynamicValue(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="product-card-body">
                   <div className="product-card-top">
