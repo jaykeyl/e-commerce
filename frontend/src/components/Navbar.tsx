@@ -223,7 +223,7 @@ export default function Navbar() {
             <a href="#" className="social-icon" title="Twitter"><IconTwitter /></a>
             <a href="#" className="social-icon" title="YouTube"><IconYoutube /></a>
           </div>
-          <div className="sidebar-copyright">© 2024 MultiStore<br/>Todos los derechos reservados.</div>
+          <div className="sidebar-copyright">© 2026 MultiStore<br/>Todos los derechos reservados.</div>
         </div>
       </aside>
 
