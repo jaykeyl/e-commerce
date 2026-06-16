@@ -11,6 +11,7 @@ interface Product {
   storeId: string;
   tags: string[];
   brand?: string;
+  imageUrl?: string;
 
   variants?: Record<string, any>[];
   sizes?: string[];
@@ -57,6 +58,7 @@ function getDynamicAttributes(product: Product) {
     'storeId',
     'tags',
     'brand',
+    'imageUrl',
     'createdAt',
     'updatedAt',
   ];
@@ -117,6 +119,17 @@ function formatAttributeName(key: string) {
   return labels[key] || key;
 }
 
+function getDynamicSummary(product: Product) {
+  const attributes = getDynamicAttributes(product);
+
+  if (attributes.length === 0) {
+    return 'Este producto no tiene atributos dinámicos adicionales.';
+  }
+
+  return attributes
+    .map(([key, value]) => `${formatAttributeName(key)}: ${formatDynamicValue(value)}`)
+    .join(' • ');
+}
 
 // ── SVG Icons ──────────────────────────────────────────────────
 const IconSearch = () => (
@@ -240,7 +253,15 @@ export default function ProductsPage() {
   });
   const [cartMsg, setCartMsg] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [liked, setLiked] = useState<Set<string>>(new Set());
+  const [liked, setLiked] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('multistore_favorites');
+      return new Set(saved ? JSON.parse(saved) : []);
+    } catch {
+      return new Set();
+    }
+  });
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const fetchProductsWithFilters = async (nextFilters = filters) => {
     setLoading(true);
@@ -288,6 +309,13 @@ export default function ProductsPage() {
     setLiked(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
+
+      try {
+        localStorage.setItem('multistore_favorites', JSON.stringify(Array.from(next)));
+      } catch {
+        // Si localStorage no está disponible, igual funciona en memoria.
+      }
+
       return next;
     });
   };
@@ -456,9 +484,21 @@ export default function ProductsPage() {
             return (
               <div key={p._id} className={`product-card product-card-premium ${isLowStock ? 'low-stock-card' : ''}`}>
                 <div className="product-card-img product-card-img-premium">
-                  <div className="product-img-placeholder">
-                    {CatIcons[p.category] || CatIcons.default}
-                  </div>
+                  {p.imageUrl && !failedImages.has(p._id) ? (
+                    <img
+                      src={p.imageUrl}
+                      alt={p.name}
+                      className="product-real-img"
+                      loading="lazy"
+                      onError={() => {
+                        setFailedImages(prev => new Set(prev).add(p._id));
+                      }}
+                    />
+                  ) : (
+                    <div className="product-img-placeholder product-img-fallback">
+                      {CatIcons[p.category] || CatIcons.default}
+                    </div>
+                  )}
 
                   <div className="product-floating-badges">
                     <span className="mongo-badge">BSON</span>
@@ -467,26 +507,15 @@ export default function ProductsPage() {
                   </div>
 
                   {dynamicAttributes.length > 0 && (
-                    <div className="product-info-mini">
-                      <button
-                        className="product-info-mini-btn"
-                        type="button"
-                        aria-label="Ver atributos dinámicos"
-                      >
-                        <IconInfo />
-                      </button>
-
-                      <div className="product-info-mini-panel">
-                        <div className="product-info-mini-title">Atributos BSON</div>
-
-                        {dynamicAttributes.slice(0, 4).map(([key, value]) => (
-                          <div key={key} className="product-info-mini-row">
-                            <small>{formatAttributeName(key)}</small>
-                            <span>{formatDynamicValue(value)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <button
+                      className="product-info-btn product-info-tooltip-btn"
+                      type="button"
+                      aria-label="Ver atributos dinámicos"
+                      data-tooltip={getDynamicSummary(p)}
+                      title={getDynamicSummary(p)}
+                    >
+                      <IconInfo />
+                    </button>
                   )}
                 </div>
 
